@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>철도적성 훈련실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: 좌측 상단 요약(직무·위험도) → 검사영역 3그룹 카드 → 별도 탭에 법령·훈련계획. 훈련 화면은 항상 어두운 운전실 콘솔 */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#141D27; --muted:#59667A; --line:#D2D9E1;
+  --accent:#1D4F91; --accent-ink:#FFFFFF; --accent-soft:#DDE7F4;
+  --ok:#1C7A4B; --ok-soft:#DCF0E5; --warn:#A86A00; --warn-soft:#F8ECD3; --bad:#B8352A; --bad-soft:#F7DEDB;
+  --stage:#111921; --stage-2:#1A2530; --stage-ink:#E7EDF3; --stage-muted:#8A99A8; --stage-line:#2B3946;
+  --sig-red:#F0473C; --sig-green:#2FC06A; --sig-yellow:#F5C02A; --sig-off:#26323D;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E141B; --surface:#161F29; --surface-2:#1B2531; --ink:#E5EAF0; --muted:#97A4B3; --line:#2A3644;
+  --accent:#78A8EA; --accent-ink:#0A1422; --accent-soft:#1E3150;
+  --ok:#5CCB8D; --ok-soft:#163626; --warn:#E3AA45; --warn-soft:#3A2D14; --bad:#F07D72; --bad-soft:#3E1D1A;
+  --stage:#091017; --stage-2:#121C26; --stage-ink:#E7EDF3; --stage-muted:#8A99A8; --stage-line:#24313D;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141B; --surface:#161F29; --surface-2:#1B2531; --ink:#E5EAF0; --muted:#97A4B3; --line:#2A3644;
+  --accent:#78A8EA; --accent-ink:#0A1422; --accent-soft:#1E3150;
+  --ok:#5CCB8D; --ok-soft:#163626; --warn:#E3AA45; --warn-soft:#3A2D14; --bad:#F07D72; --bad-soft:#3E1D1A;
+  --stage:#091017; --stage-2:#121C26; --stage-ink:#E7EDF3; --stage-muted:#8A99A8; --stage-line:#24313D;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 56px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:2rem;letter-spacing:.01em}
+h2{font-size:1.45rem}
+h3{font-size:1.2rem}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sig-yellow);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{display:flex;flex-direction:column;gap:3px;padding:6px 5px;border-radius:8px;background:var(--stage)}
+.brand-mark i{width:10px;height:10px;border-radius:50%;display:block}
+.brand-mark i:nth-child(1){background:var(--sig-red)}
+.brand-mark i:nth-child(2){background:var(--sig-yellow)}
+.brand-mark i:nth-child(3){background:var(--sig-green)}
+.brand p{font-size:.85rem;color:var(--muted)}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tab{border:0;background:none;padding:7px 16px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* summary */
+.summary{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;margin-bottom:28px}
+@media (max-width:760px){.summary{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.field-row{display:flex;flex-wrap:wrap;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 180px;min-width:0}
+.field label{font-size:.75rem;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.field select,.field input{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.inline{display:flex;gap:6px}
+.btn{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.small{padding:5px 10px;font-size:.85rem}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.stat{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-family:var(--f-mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.78rem;color:var(--muted)}
+.risk{display:flex;flex-direction:column;gap:12px}
+.risk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px;font-size:.82rem;font-weight:700}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.none{background:var(--surface-2);color:var(--muted)}
+.gradebar{display:flex;gap:4px;flex-wrap:wrap}
+.gb{flex:1 1 0;min-width:52px;text-align:center;border-radius:6px;padding:6px 2px;background:var(--surface-2);font-size:.72rem;color:var(--muted)}
+.gb b{display:block;font-family:var(--f-mono);font-size:1rem;color:var(--ink)}
+.gb.g-E{background:var(--bad-soft)} .gb.g-E b{color:var(--bad)}
+.gb.g-D{background:var(--warn-soft)} .gb.g-D b{color:var(--warn)}
+.gb.g-A b,.gb.g-B b{color:var(--ok)}
+.rec{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9rem}
+
+/* module groups */
+.group{margin-bottom:28px}
+.group-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.group-head .muted{font-size:.85rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card.out{opacity:.62}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.chip{font-size:.7rem;padding:1px 7px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.grade{font-family:var(--f-mono);font-weight:700;font-size:1.05rem;width:38px;height:38px;border-radius:8px;display:grid;place-items:center;flex:none;background:var(--surface-2);color:var(--muted)}
+.grade.g-A,.grade.g-B{background:var(--ok-soft);color:var(--ok)}
+.grade.g-C{background:var(--accent-soft);color:var(--accent)}
+.grade.g-D{background:var(--warn-soft);color:var(--warn)}
+.grade.g-E{background:var(--bad-soft);color:var(--bad)}
+.card p.desc{font-size:.88rem;color:var(--muted);flex:1}
+.spark{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.78rem;color:var(--muted)}
+.spark svg{width:120px;height:30px;flex:none}
+.card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+/* guide */
+.guide{display:grid;gap:18px}
+.guide .panel h2{margin-bottom:10px}
+.guide p+p{margin-top:8px}
+.guide ul,.guide ol{margin:8px 0 0;padding-left:1.2em}
+.guide li{margin:4px 0}
+.tablewrap{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{font-size:.75rem;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.cols2{grid-template-columns:minmax(0,1fr)}}
+.note{font-size:.82rem;color:var(--muted);margin-top:22px;max-width:70ch}
+
+/* runner overlay */
+.runner{position:fixed;inset:0;z-index:20;background:var(--stage);color:var(--stage-ink);display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 16px calc(env(safe-area-inset-bottom,0px) + 14px)}
+.run-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:980px;width:100%;margin:0 auto 10px}
+.run-bar h3{font-size:1.25rem}
+.run-bar .prog{font-family:var(--f-mono);color:var(--stage-muted);font-size:.9rem}
+.run-bar .btn{background:var(--stage-2);border-color:var(--stage-line);color:var(--stage-ink)}
+.stage{flex:1;max-width:980px;width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:0;overflow:auto;border:1px solid var(--stage-line);border-radius:14px;background:var(--stage-2);padding:20px 16px;text-align:center}
+.controls{max-width:980px;width:100%;margin:12px auto 0;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.rbtn{flex:1 1 0;min-width:70px;max-width:220px;min-height:64px;border-radius:12px;border:1px solid var(--stage-line);background:var(--stage-2);color:var(--stage-ink);font-weight:700;font-size:1.05rem;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.rbtn small{font-family:var(--f-mono);font-size:.72rem;color:var(--stage-muted);font-weight:500}
+.rbtn:active,.rbtn.hit{background:var(--stage-line)}
+.rbtn.primary{background:var(--sig-green);color:#06140B;border-color:var(--sig-green)}
+.rbtn.primary small{color:#0E3A1F}
+.stage h2{font-size:1.8rem}
+.stage .lead{max-width:56ch;color:var(--stage-ink);font-size:1rem}
+.stage .hint{color:var(--stage-muted);font-size:.9rem;max-width:56ch}
+.keys{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.kbd{font-family:var(--f-mono);border:1px solid var(--stage-line);border-bottom-width:3px;border-radius:6px;padding:2px 9px;background:var(--stage)}
+.count{font-family:var(--f-mono);font-size:5rem;font-weight:700;color:var(--sig-yellow)}
+.lamps{display:flex;gap:clamp(10px,4vw,28px);justify-content:center;flex-wrap:wrap}
+.lamp{width:clamp(56px,16vw,96px);aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--sig-off);border:5px solid #0B1117;box-shadow:inset 0 -6px 0 rgba(0,0,0,.25);transition:background .04s}
+.lamp.on.green{background:var(--sig-green);box-shadow:0 0 30px var(--sig-green)}
+.lamp.on.red{background:var(--sig-red);box-shadow:0 0 30px var(--sig-red)}
+.lamp.on.yellow{background:var(--sig-yellow);box-shadow:0 0 30px var(--sig-yellow)}
+.lamp-labels{display:flex;gap:clamp(10px,4vw,28px);justify-content:center}
+.lamp-labels span{width:clamp(56px,16vw,96px);font-family:var(--f-mono);color:var(--stage-muted)}
+.stim{width:180px;height:180px;max-width:100%}
+.target-box{display:flex;align-items:center;gap:10px;background:var(--stage);border:1px solid var(--stage-line);border-radius:10px;padding:6px 14px;font-size:.95rem}
+.target-box svg{width:34px;height:34px}
+.fb-ok{box-shadow:inset 0 0 0 3px var(--sig-green)}
+.fb-bad{box-shadow:inset 0 0 0 3px var(--sig-red)}
+.strpair{display:flex;flex-direction:column;gap:14px;font-family:var(--f-mono);font-size:clamp(1.4rem,6vw,2.6rem);letter-spacing:.14em;font-weight:700}
+.strpair div{background:var(--stage);border:1px solid var(--stage-line);border-radius:10px;padding:10px 18px;word-break:break-all}
+.shapes{display:flex;gap:clamp(14px,6vw,60px);align-items:center;justify-content:center;flex-wrap:wrap}
+.shapes svg{width:clamp(120px,32vw,190px);height:auto;max-width:100%;background:var(--stage);border:1px solid var(--stage-line);border-radius:10px}
+.digit{font-family:var(--f-mono);font-size:clamp(4rem,18vw,7rem);font-weight:700;color:var(--sig-yellow);min-height:1.2em}
+.entry{font-family:var(--f-mono);font-size:2rem;letter-spacing:.2em;min-height:1.5em;border-bottom:2px solid var(--stage-line);min-width:200px;max-width:100%;padding:0 10px}
+.series{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-family:var(--f-mono);font-size:clamp(1.3rem,5vw,2.2rem);font-weight:700}
+.series span{background:var(--stage);border:1px solid var(--stage-line);border-radius:8px;padding:6px 14px}
+.series span.q{color:var(--sig-yellow)}
+canvas.track{width:100%;max-width:760px;height:auto;aspect-ratio:16/9;background:var(--stage);border:1px solid var(--stage-line);border-radius:10px;touch-action:none;cursor:crosshair}
+.result-score{font-family:var(--f-mono);font-size:4rem;font-weight:700;line-height:1}
+.result-grade{font-family:var(--f-mono);font-size:1.6rem;font-weight:700;padding:4px 16px;border-radius:8px}
+.result-grade.g-A,.result-grade.g-B{background:#163626;color:#5CCB8D}
+.result-grade.g-C{background:#1E3150;color:#78A8EA}
+.result-grade.g-D{background:#3A2D14;color:#E3AA45}
+.result-grade.g-E{background:#3E1D1A;color:#F07D72}
+.result-detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;width:100%;max-width:560px}
+.result-detail div{background:var(--stage);border:1px solid var(--stage-line);border-radius:8px;padding:8px}
+.result-detail b{display:block;font-family:var(--f-mono);font-size:1.15rem}
+.result-detail span{font-size:.78rem;color:var(--stage-muted)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:.9rem;z-index:30}
+/* v2: 실제 검사 방식 재현용 */
+.modes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.opt-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font-size:.9rem;color:var(--stage-muted)}
+.opt-line button{background:var(--stage);border:1px solid var(--stage-line);color:var(--stage-ink);border-radius:8px;padding:5px 12px;cursor:pointer}
+.cx{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:100%;max-width:760px}
+.speed-head{display:flex;justify-content:space-between;font-size:1rem;margin-bottom:6px}
+.speed-head b{font-size:1.4rem}
+.speedbar{position:relative;height:28px;background:var(--stage);border:1px solid var(--stage-line);border-radius:6px;overflow:hidden}
+.speedfill{position:absolute;left:0;top:0;bottom:0;background:var(--sig-green);opacity:.75}
+.speedfill.off{background:var(--sig-red)}
+.speedtgt{position:absolute;top:-2px;bottom:-2px;width:4px;margin-left:-2px;background:var(--sig-yellow)}
+.digital{font-size:2.4rem;font-weight:700;color:var(--sig-yellow)}
+.clocks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.clocks div{display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--f-mono);color:var(--stage-muted);font-size:.85rem}
+.clocks svg{width:100%;max-width:120px;height:auto}
+.ear{display:flex;align-items:center;justify-content:center;gap:10px;min-height:40px;color:var(--stage-muted);font-size:.9rem}
+.ear .wave{width:14px;height:14px;border-radius:50%;background:var(--stage-line)}
+.ear .wave.on{background:var(--sig-yellow)}
+.ear .vd{font-family:var(--f-mono);font-size:1.6rem;color:var(--stage-ink);min-width:1.2em}
+.stroop{display:flex;gap:clamp(16px,6vw,60px);align-items:center;justify-content:center;flex-wrap:wrap}
+.stroop div{font-size:clamp(2.2rem,9vw,3.6rem);font-weight:700;background:var(--stage);border:1px solid var(--stage-line);border-radius:12px;padding:12px 26px;min-width:150px}
+.sigsets{display:flex;gap:clamp(14px,5vw,48px);align-items:center;justify-content:center;flex-wrap:wrap}
+.sigset{display:flex;gap:8px;background:var(--stage);border:1px solid var(--stage-line);border-radius:12px;padding:12px}
+.head{display:flex;flex-direction:column;gap:5px;background:#05090D;border-radius:10px;padding:6px}
+.head i{width:clamp(16px,4.2vw,26px);aspect-ratio:1;border-radius:50%;background:var(--sig-off);display:block}
+.head i.r{background:var(--sig-red);box-shadow:0 0 8px var(--sig-red)}
+.head i.y{background:var(--sig-yellow);box-shadow:0 0 8px var(--sig-yellow)}
+.head i.g{background:var(--sig-green);box-shadow:0 0 8px var(--sig-green)}
+.vs{color:var(--stage-muted);font-family:var(--f-mono)}
+.map svg{width:min(480px,100%);height:auto;background:var(--stage);border:1px solid var(--stage-line);border-radius:10px}
+.wm svg{width:min(260px,70vw);height:auto}
+.symkey{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.symkey div{display:flex;flex-direction:column;align-items:center;background:var(--stage);border:1px solid var(--stage-line);border-radius:8px;min-width:50px;padding:4px 8px}
+.symkey b{font-size:1.6rem;line-height:1.3}
+.symkey span{font-family:var(--f-mono);color:var(--sig-yellow);font-weight:700}
+.symrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.symrow div{width:clamp(44px,12vw,64px);aspect-ratio:1;display:grid;place-items:center;font-size:clamp(1.6rem,6vw,2.2rem);border:2px solid var(--stage-line);border-radius:10px;background:var(--stage)}
+.symrow div.cur{border-color:var(--sig-yellow)}
+.symrow div.ok{opacity:.35}
+.symrow div.bad{border-color:var(--sig-red);opacity:.5}
+.lsym{font-family:var(--f-mono)}
+.kb{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;max-width:680px}
+.kb-row{display:flex;gap:4px;width:100%;justify-content:center}
+.kc{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;border:1px solid var(--stage-line);border-bottom-width:3px;border-radius:7px;background:var(--stage);color:var(--stage-muted)}
+.kc b{font-family:var(--f-mono);font-size:clamp(.8rem,2.6vw,1.05rem);position:relative}
+.kc b u{position:absolute;left:20%;right:20%;bottom:-3px;height:2px;background:currentColor;border-radius:1px}
+.kc em{font-style:normal;font-size:clamp(.6rem,1.9vw,.78rem);color:var(--sig-yellow);font-weight:700;line-height:1.2;word-break:keep-all}
+.kc span{font-size:clamp(.52rem,1.6vw,.66rem);line-height:1.2;word-break:keep-all}
+.kc.use{border-color:var(--sig-yellow);color:var(--stage-ink)}
+.kc.space{flex:0 1 46%}
+.belt{position:relative;height:clamp(180px,32vh,280px);width:min(220px,60vw);margin:0 auto;border-left:3px solid var(--stage-line);border-right:3px solid var(--stage-line);background:repeating-linear-gradient(180deg,var(--stage) 0 18px,var(--stage-2) 18px 36px)}
+.belt-num{position:absolute;left:50%;transform:translateX(-50%);top:0;font-size:2rem;font-weight:700;background:var(--sig-yellow);color:#111921;border-radius:8px;padding:2px 14px}
+.boxes{display:flex;gap:16px;justify-content:center}
+.box{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--stage);border:2px solid var(--stage-line);border-radius:10px;padding:8px 14px;min-width:120px}
+.box b{font-size:.95rem}
+.box span{font-family:var(--f-mono);color:var(--stage-muted);font-size:.8rem}
+.box.full{border-color:var(--sig-red)}
+.slots{display:flex;gap:4px}
+.slots i{width:16px;height:16px;border-radius:3px;background:var(--stage-line);display:block}
+.slots i.on{background:var(--sig-green)}
+.box.full .slots i.on{background:var(--sig-red)}
+.routes{display:flex;gap:clamp(8px,3vw,24px);align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+.routes>div{flex:1 1 260px;max-width:400px;min-width:0}
+.routes svg{width:100%;height:auto;background:var(--stage);border:1px solid var(--stage-line);border-radius:10px}
+.symkey small{font-family:var(--f-mono);font-size:.68rem;color:var(--stage-muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div>
+        <h1>철도적성 훈련실</h1>
+        <p>철도안전법 시행규칙 별표 13 반응형 검사 항목에 맞춘 인지기능 훈련</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-train" aria-selected="true">훈련</button>
+      <button class="tab" role="tab" id="tab-guide" aria-selected="false">검사 안내·훈련 계획</button>
+    </nav>
+  </header>
+
+  <main id="view-train">
+    <section class="summary">
+      <div class="panel">
+        <div class="field-row">
+          <div class="field">
+            <label for="profile">훈련자</label>
+            <div class="inline">
+              <select id="profile"></select>
+              <button class="btn small" id="add-profile" type="button">추가</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="job">대비할 검사</label>
+            <select id="job">
+              <option value="drive">운전업무 · 정기검사</option>
+              <option value="drive-sp">운전업무 · 특별검사</option>
+              <option value="ctrl">관제·신호취급 · 정기검사</option>
+              <option value="ctrl-sp">관제·신호취급 · 특별검사</option>
+            </select>
+          </div>
+        </div>
+        <form class="inline" id="new-profile-form" hidden style="margin-top:10px">
+          <input id="new-profile-name" placeholder="이름 또는 사번" maxlength="20" style="flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px">
+          <button class="btn primary small" type="submit">저장</button>
+          <button class="btn small" type="button" id="cancel-profile">취소</button>
+        </form>
+        <div class="stats">
+          <div class="stat"><b id="st-total">0</b><span>누적 훈련 횟수</span></div>
+          <div class="stat"><b id="st-days">0</b><span>최근 7일 훈련한 날</span></div>
+          <div class="stat"><b id="st-avg">–</b><span>대상 항목 평균 점수</span></div>
+        </div>
+      </div>
+      <div class="panel risk">
+        <div class="risk-head">
+          <h3>검사 대상 항목 현재 등급</h3>
+          <span class="pill none" id="risk-pill">측정 전</span>
+        </div>
+        <div class="gradebar" id="gradebar"></div>
+        <p class="muted" style="font-size:.84rem" id="risk-text">정기·특별검사는 반응형 항목 중 E등급이 2개 이상이면 불합격입니다. 각 항목의 최근 점수로 계산합니다.</p>
+        <div class="rec" id="rec"></div>
+      </div>
+    </section>
+    <div id="groups"></div>
+    <p class="note">등급은 훈련용 추정치입니다. 실제 검사는 지정 적성검사기관의 전용 검사기로 시행하며, 문항 형식과 채점 기준이 이 훈련과 다를 수 있습니다. 기록은 이 브라우저에만 저장됩니다. 공용 PC에서는 훈련자를 골라서 사용하세요.</p>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn small" id="copy-csv" type="button">전체 기록 복사 (엑셀 붙여넣기용)</button>
+      <button class="btn small" id="del-profile" type="button">이 훈련자 기록 삭제</button>
+      <span id="del-confirm" hidden><button class="btn small" id="del-yes" type="button" style="color:var(--bad)">삭제 확인</button> <button class="btn small" id="del-no" type="button">취소</button></span>
+    </div>
+    <textarea id="csv-fallback" hidden readonly style="width:100%;height:120px;margin-top:10px;font-family:var(--f-mono);font-size:.8rem;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px"></textarea>
+  </main>
+
+  <main id="view-guide" class="guide" hidden>
+    <section class="panel">
+      <h2>무엇을 검사하나</h2>
+      <p>철도안전법 시행규칙 제41조와 별표 13에 따라 운전·관제·신호취급 종사자는 최초검사 후 <b>10년마다, 50세 이상은 5년마다</b> 정기검사를 받습니다. 정기검사는 유효기간 만료일 전 12개월 안에 받아야 합니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>구분</th><th>문답형 검사</th><th>반응형 검사</th><th>불합격 기준</th></tr></thead>
+          <tbody>
+            <tr><td>운전업무 정기</td><td>일반성격 · 안전성향 · 스트레스</td><td>복합기능 · 선택주의 · 지속주의 · 시각변별 · 공간지각 · 민첩성</td><td rowspan="4">안전성향 부적합, 또는 반응형 항목 중 E등급 2개 이상</td></tr>
+            <tr><td>운전업무 특별</td><td>동일</td><td>정기 항목 + 추론</td></tr>
+            <tr><td>관제·신호 정기</td><td>동일</td><td>복합기능 · 선택주의 · 시각변별 · 공간지각 · 작업기억 · 민첩성</td></tr>
+            <tr><td>관제·신호 특별</td><td>동일</td><td>정기 항목 + 추론</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:10px" class="muted">안전성향 검사는 방어성(타당도)과 임상척도 중 표준점수 70 이상인 척도 수로 판정합니다. 1개 이하면 적합, 2개면 상담 권유, 3개 이상이면 부적합입니다. 부적합이 나오면 당일 1회 재검사를 받을 수 있고, 정신건강의학과 전문의 진단으로 대체할 수도 있습니다.</p>
+    </section>
+
+    <section class="panel">
+      <h2>실제 검사 화면과 이 훈련의 대응</h2>
+      <p>코레일 휴먼안전센터(kra.korail.com)의 검사항목 안내와 응시 후기를 바탕으로 만들었습니다. 실제 검사는 태블릿 화면과 버튼 박스, 헤드폰으로 진행합니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>항목</th><th>실제 검사 방식</th><th>문항·시간</th><th>판정 지표</th></tr></thead>
+          <tbody>
+            <tr><td>복합기능 (관제)</td><td>컨베이어벨트에서 내려오는 숫자에 대해 시각(숫자넣기, 박스추가)과 청각(숫자 "7")으로 정해진 동작</td><td>5분</td><td>시각·청각 정답수</td></tr>
+            <tr><td>시각변별 (관제)</td><td>화면 가운데를 기준으로 제시되는 노선도 한 쌍을 비교해 일치/불일치 선택</td><td>150문항 · 10분</td><td>정답수</td></tr>
+            <tr><td>복합기능 (운전)</td><td>계속 감속하는 속도를 목표속도에 맞추면서, 가운데 시각과 같은 시계를 고르고, 헤드폰에서 "7"이 들리면 반응</td><td>5분</td><td>청각 정답수, 시각 정답수, 속도차이 평균. 틀리면 감점</td></tr>
+            <tr><td>선택주의</td><td>왼쪽 단어의 뜻과 오른쪽 단어의 글자색이 같은지 판단</td><td>160문항 · 5분</td><td>반응속도, 정답수</td></tr>
+            <tr><td>지속주의</td><td>짧게 나타나는 자극과 길게 나타나는 자극 중 짧은 자극에만 반응</td><td>24분</td><td>정답수</td></tr>
+            <tr><td>시각변별 (운전)</td><td>좌우 신호등 세트가 같은지 비교. 신호등 개수가 2개에서 3개, 4개로 늘어남</td><td>150문항 · 10분</td><td>정답수</td></tr>
+            <tr><td>공간지각</td><td>장애물을 피해 숫자에서 숫자까지 가장 빠른 경로를 찾고, 거쳐 가는 건물의 알파벳 선택</td><td>50문항 · 10분</td><td>정답수</td></tr>
+            <tr><td>작업기억 (관제·신호)</td><td>색칠된 칸의 위치가 포함되어 있었는지 판단</td><td>80문항 · 5분</td><td>정답수</td></tr>
+            <tr><td>민첩성</td><td>위에 제시된 기호-숫자 표를 보고 아래 기호 순서대로 버튼 누르기</td><td>2분</td><td>정반응 수</td></tr>
+            <tr><td>추론 (특별검사)</td><td>수열·문자 규칙, 도형 규칙, 도형 조합</td><td>각 20~25문항 · 6~10분</td><td>정답수</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:10px" class="muted">관제 복합기능의 "숫자넣기·박스추가"는 공개 설명이 한 줄뿐이라, 이 훈련에서는 홀짝 상자에 넣고 가득 차면 상자를 추가하는 규칙으로 구성했습니다. 실제 규칙과 다를 수 있습니다. 관제특별 열차간격 조절, 특별검사의 시뮬레이터 과제와 도형 추론은 아직 넣지 않았습니다. 각 훈련은 연습(짧게)과 실전(공식 문항 수·시간) 중에서 고를 수 있습니다.</p>
+    </section>
+
+    <section class="panel">
+      <h2>4주 훈련 계획</h2>
+      <p>하루 15~25분, 주 4~5일. 짧게 자주 하는 편이 한 번에 오래 하는 것보다 효과가 큽니다.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>주차</th><th>목표</th><th>할 것</th></tr></thead>
+          <tbody>
+            <tr><td>1주</td><td>검사 방식 익히기, 기준 점수 측정</td><td>대상 항목을 연습 모드로 하루 3개씩. 주말까지 모든 항목의 기록 남기기</td></tr>
+            <tr><td>2주</td><td>약점 집중</td><td>D·E등급 항목 2개를 각 2회 + 복합기능 1회. 지속주의 실전(24분) 1회</td></tr>
+            <tr><td>3주</td><td>실전 시간 적응</td><td>하루 2개 항목을 실전 모드로. 복합기능은 소리를 켜고 헤드폰으로</td></tr>
+            <tr><td>4주</td><td>실전 리허설</td><td>검사 3일 전 대상 항목 전체를 실전 모드로 연속 진행. 전날은 연습 모드 1~2개만</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="cols2">
+      <section class="panel">
+        <h2>문답형(인성) 검사 대비</h2>
+        <ul>
+          <li>정답을 고르려 하지 말고 평소 행동대로 솔직하게 답하세요. 지나치게 좋은 쪽으로만 답하면 방어성 척도가 높게 나와 오히려 불리합니다.</li>
+          <li>비슷한 질문이 표현을 바꿔 반복됩니다. 처음 떠오른 답을 고르면 일관성이 유지됩니다.</li>
+          <li>스트레스 문항은 검사 당일 상태의 영향을 받습니다. 전날 음주와 야간근무 직후 응시는 피하세요.</li>
+          <li>최근 수면 문제나 우울감이 크다면 미리 상담을 받아 두세요. 전문의 진단은 안전성향 검사를 대체할 수 있습니다.</li>
+        </ul>
+      </section>
+      <section class="panel">
+        <h2>중장년 응시자 체크리스트</h2>
+        <ul>
+          <li><b>시력:</b> 태블릿 거리(40~60cm)에 맞는 안경을 가져가세요. 다초점 렌즈는 화면 아래쪽이 흐려 보일 수 있습니다.</li>
+          <li><b>청력:</b> 복합기능은 헤드폰으로 숫자를 듣습니다. 잘 안 들리면 시작 전에 감독관에게 음량 조절을 요청하세요.</li>
+          <li><b>체력 배분:</b> 지속주의는 24분입니다. 검사 사이 쉬는 시간에 눈을 감고 쉬고, 물을 조금씩 마시세요.</li>
+          <li><b>수면:</b> 검사 전 이틀은 7시간 이상. 야간근무 직후 응시는 피하도록 일정을 조정하세요.</li>
+          <li><b>정확도 우선:</b> 복합기능은 틀리면 감점됩니다. 확실할 때 누르세요.</li>
+          <li><b>손 위치:</b> 시작 전 버튼 박스 위에 손가락을 올려 두세요. 손을 옮기는 시간도 반응시간에 들어갑니다.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="runner" id="runner" hidden>
+  <div class="run-bar">
+    <h3 id="run-title">훈련</h3>
+    <span class="prog" id="run-prog"></span>
+    <button class="btn small" id="run-exit" type="button">그만하기 <span class="mono" style="opacity:.6">Esc</span></button>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="controls" id="controls"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const STORE='rail-apt-v1';
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,v));
+const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function gradeOf(s){return s>=80?'A':s>=65?'B':s>=50?'C':s>=35?'D':'E';}
+
+/* ---------- storage ---------- */
+let db=(function(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s&&s.profiles&&s.current&&s.profiles[s.current])return s;}catch(e){}return {current:'훈련자 1',profiles:{'훈련자 1':{job:'drive',sessions:[]}}};})();
+function save(){try{localStorage.setItem(STORE,JSON.stringify(db));}catch(e){}}
+const prof=()=>db.profiles[db.current];
+
+/* ---------- modules ---------- */
+const SCOPE={
+  'drive':['complex','selective','sustained','visual','spatial','agility'],
+  'drive-sp':['complex','selective','sustained','visual','spatial','reasoning','agility'],
+  'ctrl':['complexCtrl','selective','visualCtrl','spatial','memory','agility'],
+  'ctrl-sp':['complexCtrl','selective','visualCtrl','spatial','memory','reasoning','agility']
+};
+const GROUPS=[
+  {name:'주의력',sub:'여러 일을 동시에 처리하고, 헷갈리는 자극을 걸러내고, 오래 집중하는 능력',ids:['complex','complexCtrl','selective','sustained']},
+  {name:'인식 및 기억력',sub:'신호를 정확히 비교하고, 길을 찾고, 위치를 잠깐 기억하는 능력',ids:['visual','visualCtrl','spatial','memory']},
+  {name:'판단 및 행동력',sub:'규칙을 찾아내고 빠르고 정확하게 손을 움직이는 능력',ids:['reasoning','agility']}
+];
+const MODS={
+  complex:{name:'복합기능 (운전)',chips:['운전'],official:'5분',practice:'2분',
+    desc:'계속 줄어드는 속도를 목표속도에 맞추면서, 같은 시각의 시계를 고르고, 음성 숫자 "7"에 반응합니다.',
+    howto:'세 가지를 동시에 합니다.<br>① <b>속도</b> (왼손): 속도가 계속 떨어집니다. <span class="kbd">F</span>를 누르고 있으면 가속, <span class="kbd">D</span>를 누르고 있으면 더 빨리 감속. 노란 목표선에 맞추세요.<br>② <b>시계</b> (오른손): 가운데 시각과 같은 시계를 왼쪽부터 <span class="kbd">J</span> <span class="kbd">K</span> <span class="kbd">L</span> <span class="kbd">;</span>로 고르세요.<br>③ <b>소리</b> (엄지): <b>"7(칠)"</b>이 들리면 <span class="kbd">Space</span>. 틀린 반응은 감점됩니다.',
+    keys:{d:'감속',f:'가속',j:'시계 1',k:'시계 2',l:'시계 3',';':'시계 4',space:'"7" 들림'},run:runComplex},
+  complexCtrl:{name:'복합기능 (관제)',chips:['관제·신호'],official:'5분',practice:'2분',
+    desc:'컨베이어벨트로 내려오는 숫자를 알맞은 상자에 넣고, 상자가 차면 새 상자를 추가하면서, 음성 숫자 "7"에 반응합니다.',
+    howto:'세 가지를 동시에 합니다.<br>① <b>숫자넣기</b> (오른손): 벨트로 내려오는 숫자가 바닥에 닿기 전에 <b>홀수</b>면 <span class="kbd">J</span>, <b>짝수</b>면 <span class="kbd">K</span>.<br>② <b>박스추가</b> (왼손): 상자는 5개가 차면 가득 찹니다. 가득 찬 상자가 생기면 <span class="kbd">F</span>로 새 상자를 추가하세요. 가득 찬 상자에 넣으면 오답입니다.<br>③ <b>소리</b> (엄지): <b>"7(칠)"</b>이 들리면 <span class="kbd">Space</span>.',
+    keys:{f:'박스추가',j:'홀수 상자',k:'짝수 상자',space:'"7" 들림'},run:runComplexCtrl},
+  selective:{name:'선택주의',chips:['운전','관제·신호'],official:'160문항 · 5분',practice:'80문항',
+    desc:'왼쪽 단어의 뜻과 오른쪽 단어의 글자색이 같은지 빠르게 판단합니다.',
+    howto:'왼쪽 단어가 <b>뜻하는 색</b>과 오른쪽 단어가 <b>칠해진 색</b>이 같으면 <span class="kbd">F</span> 일치, 다르면 <span class="kbd">J</span> 불일치. 오른쪽 단어의 글자 뜻은 무시하세요.',
+    keys:{f:'일치',j:'불일치'},run:runSelective},
+  sustained:{name:'지속주의',chips:['운전'],official:'24분',practice:'5분',
+    desc:'신호등이 짧게 켜졌다 꺼질 때만 반응하고, 길게 켜질 때는 참습니다.',
+    howto:'신호등이 켜졌다 꺼집니다. <b>짧게 깜빡</b>하고 꺼지면 <span class="kbd">Space</span>, <b>길게</b> 켜져 있으면 누르지 마세요. 실전은 24분 동안 계속됩니다. 양손 엄지를 Space 위에 올려 두세요.',
+    keys:{space:'짧은 신호'},run:runSustained},
+  visual:{name:'시각변별 (운전)',chips:['운전'],official:'150문항 · 10분',practice:'50문항',
+    desc:'좌우 신호등 세트가 똑같은지 비교합니다. 신호등이 2개에서 4개까지 늘어납니다.',
+    howto:'왼쪽과 오른쪽 신호등 세트의 점등 상태가 <b>모두 같으면</b> <span class="kbd">F</span> 같음, 하나라도 다르면 <span class="kbd">J</span> 다름. 뒤로 갈수록 신호등 수가 늘어납니다.',
+    keys:{f:'같음',j:'다름'},run:runVisual},
+  visualCtrl:{name:'시각변별 (관제)',chips:['관제·신호'],official:'150문항 · 10분',practice:'50문항',
+    desc:'화면 가운데를 기준으로 좌우에 나온 노선도 한 쌍이 똑같은지 비교합니다.',
+    howto:'왼쪽과 오른쪽 노선도의 <b>역 수, 갈라지는 지선의 위치와 방향, 환승역(속이 빈 원), 열차 위치와 진행방향(노란 삼각형)</b>이 모두 같으면 <span class="kbd">F</span> 같음, 하나라도 다르면 <span class="kbd">J</span> 다름.',
+    keys:{f:'같음',j:'다름'},run:runVisualCtrl},
+  spatial:{name:'공간지각',chips:['운전','관제·신호'],official:'50문항 · 10분',practice:'20문항',
+    desc:'장애물을 피해 1에서 2까지 가장 빠른 길을 찾고, 그 길이 지나는 건물을 고릅니다.',
+    howto:'회색 칸은 장애물입니다. 상하좌우로만 움직여 <b>1에서 2까지 가장 빨리 가는 길</b>이 지나는 건물(A~D)을 고르세요. 건물 A·B·C·D는 왼쪽부터 <span class="kbd">D</span> <span class="kbd">F</span> <span class="kbd">J</span> <span class="kbd">K</span>(양손 중지·검지)로 답합니다.',
+    keys:{d:'A',f:'B',j:'C',k:'D'},run:runSpatial},
+  memory:{name:'작업기억',chips:['관제·신호'],official:'80문항 · 5분',practice:'40문항',
+    desc:'잠깐 보인 색칠된 칸들을 기억했다가 표시된 칸이 포함됐는지 판단합니다.',
+    howto:'격자에 몇 칸이 잠깐 색칠됩니다. 사라진 뒤 <b>테두리로 표시된 칸</b>이 아까 색칠된 칸이었으면 <span class="kbd">F</span> 포함, 아니면 <span class="kbd">J</span> 미포함.',
+    keys:{f:'포함',j:'미포함'},run:runMemory},
+  reasoning:{name:'추론',chips:['특별검사'],official:'20문항 · 10분',practice:'10문항',
+    desc:'숫자나 문자 배열의 규칙을 찾아 다음에 올 것을 고릅니다.',
+    howto:'다섯 개의 숫자 또는 문자가 어떤 규칙으로 이어지는지 찾아 다음 것을 고르세요. 보기 1~4는 왼쪽부터 <span class="kbd">D</span> <span class="kbd">F</span> <span class="kbd">J</span> <span class="kbd">K</span>(숫자키 1~4도 가능).',
+    keys:{d:'보기 1',f:'보기 2',j:'보기 3',k:'보기 4'},run:runReasoning},
+  agility:{name:'민첩성',chips:['운전','관제·신호'],official:'2분',practice:'1분',
+    desc:'위쪽 기호-숫자 표를 보고 아래 기호 순서대로 숫자 버튼을 빠르게 누릅니다.',
+    howto:'위쪽 표에 기호마다 숫자가 정해져 있습니다. 아래 줄의 <b>노란 테두리 기호</b>에 해당하는 숫자 버튼을 차례로 누르세요. 버튼 1~6은 홈 줄 <span class="kbd">S</span> <span class="kbd">D</span> <span class="kbd">F</span> <span class="kbd">J</span> <span class="kbd">K</span> <span class="kbd">L</span>(양손 약지·중지·검지)에 있습니다. 표는 몇 줄마다 바뀝니다.',
+    keys:{s:'1',d:'2',f:'3',j:'4',k:'5',l:'6'},run:runAgility}
+};
+
+/* ---------- dashboard ---------- */
+function sessionsOf(id){return prof().sessions.filter(s=>s.m===id);}
+function lastOf(id){const a=sessionsOf(id);return a.length?a[a.length-1]:null;}
+function sparkSVG(scores){
+  if(scores.length<2)return '';
+  const w=120,h=30,p=3,n=scores.length;
+  const x=i=>p+i*(w-2*p)/(n-1), y=v=>h-p-(v/100)*(h-2*p);
+  const pts=scores.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const area=`${x(0)},${h-p} ${pts} ${x(n-1)},${h-p}`;
+  const ly=y(35).toFixed(1);
+  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><line x1="${p}" x2="${w-p}" y1="${ly}" y2="${ly}" stroke="var(--bad)" stroke-dasharray="2 3" stroke-width="1" opacity=".6"/><polygon points="${area}" fill="var(--accent-soft)"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.8"/><circle cx="${x(n-1)}" cy="${y(scores[n-1])}" r="3" fill="var(--accent)"/></svg>`;
+}
+function render(){
+  const p=prof();
+  $('#profile').innerHTML=Object.keys(db.profiles).map(n=>`<option ${n===db.current?'selected':''}>${esc(n)}</option>`).join('');
+  $('#job').value=p.job||'drive';
+  const scope=SCOPE[p.job||'drive'];
+  $('#st-total').textContent=p.sessions.length;
+  const week=Date.now()-7*864e5;
+  $('#st-days').textContent=new Set(p.sessions.filter(s=>s.t>=week).map(s=>new Date(s.t).toDateString())).size;
+  const lasts=scope.map(id=>({id,l:lastOf(id)}));
+  const measured=lasts.filter(x=>x.l);
+  $('#st-avg').textContent=measured.length?Math.round(mean(measured.map(x=>x.l.s))):'–';
+  $('#gradebar').innerHTML=lasts.map(x=>{const g=x.l?gradeOf(x.l.s):'';return `<div class="gb ${g?'g-'+g:''}"><b>${g||'–'}</b>${MODS[x.id].name}</div>`;}).join('');
+  const eCount=measured.filter(x=>gradeOf(x.l.s)==='E').length;
+  const dCount=measured.filter(x=>gradeOf(x.l.s)==='D').length;
+  const pill=$('#risk-pill');
+  if(!measured.length){pill.className='pill none';pill.textContent='측정 전';}
+  else if(eCount>=2){pill.className='pill bad';pill.textContent=`불합격 위험 · E ${eCount}개`;}
+  else if(eCount===1||dCount>=2){pill.className='pill warn';pill.textContent=eCount?'주의 · E 1개':`주의 · D ${dCount}개`;}
+  else{pill.className='pill ok';pill.textContent=measured.length<scope.length?`양호 · ${scope.length-measured.length}개 미측정`:'합격권';}
+  const order=lasts.slice().sort((a,b)=>(a.l?a.l.s:-1)-(b.l?b.l.s:-1)).slice(0,3).map(x=>x.id);
+  $('#rec').innerHTML=`<span class="muted">오늘 추천:</span> ${order.map(id=>`<b>${MODS[id].name}</b>`).join(' → ')} <button class="btn primary small" id="rec-go" type="button">연속으로 시작</button>`;
+  $('#rec-go').onclick=()=>openRunner(order);
+  $('#groups').innerHTML=GROUPS.map(g=>`<section class="group"><div class="group-head"><h2>${g.name}</h2><span class="muted">${g.sub}</span></div><div class="cards">${g.ids.map(id=>{
+    const m=MODS[id],ss=sessionsOf(id),l=ss.length?ss[ss.length-1]:null,inScope=scope.includes(id);
+    const g2=l?gradeOf(l.s):'';
+    const best=ss.length?Math.max(...ss.map(s=>s.s)):null;
+    return `<article class="card ${inScope?'':'out'}">
+      <div class="card-top"><div><h3>${m.name}</h3><div class="chips">${m.chips.map(c=>`<span class="chip">${c}</span>`).join('')}${inScope?'':'<span class="chip">선택한 검사 외</span>'}</div></div><div class="grade ${g2?'g-'+g2:''}" title="최근 등급">${g2||'–'}</div></div>
+      <p class="desc">${m.desc}</p>
+      <div class="spark">${ss.length?`<span>최근 <b class="mono">${l.s}</b>점 · 최고 <b class="mono">${best}</b> · ${ss.length}회</span>${sparkSVG(ss.slice(-10).map(s=>s.s))}`:'<span>아직 기록이 없습니다</span>'}</div>
+      <div class="card-foot"><span class="muted" style="font-size:.8rem">실제 검사 ${m.official}</span><button class="btn ${inScope?'primary':''} small" data-run="${id}" type="button">훈련 시작</button></div>
+    </article>`;}).join('')}</div></section>`).join('');
+  document.querySelectorAll('[data-run]').forEach(b=>b.onclick=()=>openRunner([b.dataset.run]));
+}
+
+/* profile controls */
+$('#profile').onchange=e=>{db.current=e.target.value;save();render();};
+$('#job').onchange=e=>{prof().job=e.target.value;save();render();};
+$('#add-profile').onclick=()=>{$('#new-profile-form').hidden=false;$('#new-profile-name').focus();};
+$('#cancel-profile').onclick=()=>{$('#new-profile-form').hidden=true;};
+$('#new-profile-form').onsubmit=e=>{e.preventDefault();const n=$('#new-profile-name').value.trim();if(!n)return;
+  if(!db.profiles[n])db.profiles[n]={job:prof().job||'drive',sessions:[]};db.current=n;save();$('#new-profile-name').value='';$('#new-profile-form').hidden=true;render();toast(`${n} 훈련자로 전환했습니다`);};
+$('#del-profile').onclick=()=>{$('#del-confirm').hidden=false;};
+$('#del-no').onclick=()=>{$('#del-confirm').hidden=true;};
+$('#del-yes').onclick=()=>{const n=db.current;delete db.profiles[n];
+  if(!Object.keys(db.profiles).length)db.profiles['훈련자 1']={job:'drive',sessions:[]};db.current=Object.keys(db.profiles)[0];save();$('#del-confirm').hidden=true;render();toast(`${n} 기록을 삭제했습니다`);};
+$('#copy-csv').onclick=()=>{
+  const rows=[['훈련자','항목','점수','등급','일시','세부']];
+  for(const [n,p] of Object.entries(db.profiles))for(const s of p.sessions)if(MODS[s.m])rows.push([n,MODS[s.m].name,s.s,gradeOf(s.s),new Date(s.t).toLocaleString('ko-KR'),s.d||'']);
+  const txt=rows.map(r=>r.join('\t')).join('\n');
+  const fb=()=>{const ta=$('#csv-fallback');ta.hidden=false;ta.value=txt;ta.select();toast('아래 칸의 내용을 Ctrl+C로 복사하세요');};
+  try{navigator.clipboard.writeText(txt).then(()=>toast(`${rows.length-1}건을 복사했습니다. 엑셀에 붙여넣으세요`),fb);}catch(e){fb();}
+};
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600);}
+
+/* tabs */
+function setTab(which){$('#tab-train').setAttribute('aria-selected',which==='train');$('#tab-guide').setAttribute('aria-selected',which==='guide');
+  $('#view-train').hidden=which!=='train';$('#view-guide').hidden=which!=='guide';try{localStorage.setItem(STORE+'-tab',which);}catch(e){}}
+$('#tab-train').onclick=()=>setTab('train');$('#tab-guide').onclick=()=>setTab('guide');
+try{if(location.hash==='#guide'||localStorage.getItem(STORE+'-tab')==='guide')setTab('guide');}catch(e){}
+
+/* ---------- runner framework ---------- */
+let run=null;
+const stage=$('#stage'),controls=$('#controls');
+function setProg(t){$('#run-prog').textContent=t||'';}
+function later(fn,ms){const r=run;const t=setTimeout(()=>{r.timers.delete(t);if(r.alive)fn();},ms);r.timers.add(t);return t;}
+function wait(ms){return new Promise(res=>later(res,ms));}
+function setButtons(list){
+  controls.innerHTML=list.map(b=>`<button class="rbtn ${b.cls||''}" data-k="${b.key}" ${b.hold?`data-hold="${b.hold}"`:''} type="button">${b.label}${b.hint?`<small>${b.hint}</small>`:''}</button>`).join('');
+  controls.querySelectorAll('.rbtn').forEach(el=>{
+    if(el.dataset.hold){
+      const on=e=>{e.preventDefault();if(run)run.hold[el.dataset.hold]=true;el.classList.add('hit');};
+      const off=()=>{if(run)run.hold[el.dataset.hold]=false;el.classList.remove('hit');};
+      el.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(t=>el.addEventListener(t,off));
+    }else el.addEventListener('pointerdown',e=>{e.preventDefault();press(el.dataset.k);});
+  });
+}
+function press(k){if(!run)return;const el=controls.querySelector(`[data-k="${CSS.escape(k)}"]`);if(el){el.classList.add('hit');setTimeout(()=>el.classList.remove('hit'),120);}if(run.onResp)run.onResp(k);}
+// 물리적 키 위치(e.code)로 판정: 한글/영문 입력 상태와 무관
+function normKey(e){const c=e.code||'';let m;
+  if(c==='Space')return 'space';if(c==='Enter'||c==='NumpadEnter')return 'enter';if(c==='Backspace')return 'backspace';if(c==='Semicolon')return ';';
+  if((m=c.match(/^Key([A-Z])$/)))return m[1].toLowerCase();if((m=c.match(/^(?:Digit|Numpad)([0-9])$/)))return m[1];
+  const k=e.key;if(k===' ')return 'space';if(k==='Enter')return 'enter';return k&&k.length===1?k.toLowerCase():null;}
+document.addEventListener('keydown',e=>{
+  if(!run)return;
+  if(e.key==='Escape'){closeRunner();return;}
+  if(e.target&&e.target.tagName==='INPUT'&&e.code==='Space')return;
+  const k=normKey(e);if(!k)return;
+  if(run.holdMap&&run.holdMap[k]){e.preventDefault();run.hold[run.holdMap[k]]=true;const el=controls.querySelector(`[data-k="${CSS.escape(k)}"]`);if(el)el.classList.add('hit');return;}
+  if(e.repeat)return;
+  if(run.onResp&&run.accept.includes(k)){e.preventDefault();press(k);}
+});
+document.addEventListener('keyup',e=>{if(!run||!run.holdMap)return;const k=normKey(e);if(k&&run.holdMap[k]){run.hold[run.holdMap[k]]=false;const el=controls.querySelector(`[data-k="${CSS.escape(k)}"]`);if(el)el.classList.remove('hit');}});
+window.addEventListener('blur',()=>{if(run)run.hold={};});
+/* 홈 위치 키보드 그림 */
+const HOME=[['a','왼손 새끼'],['s','왼손 약지'],['d','왼손 중지'],['f','왼손 검지'],['g',''],['h',''],['j','오른손 검지'],['k','오른손 중지'],['l','오른손 약지'],[';','오른손 새끼']];
+const keyCap=k=>k==='space'?'Space':k===';'?';':k.toUpperCase();
+function kbDiagram(map){
+  return `<div class="kb" aria-label="키 배치"><div class="kb-row">${HOME.map(([k,f])=>`<div class="kc ${map[k]?'use':''}"><b>${keyCap(k)}${k==='f'||k==='j'?'<u></u>':''}</b>${map[k]?`<em>${map[k]}</em><span>${f}</span>`:''}</div>`).join('')}</div>
+  <div class="kb-row"><div class="kc space ${map.space?'use':''}"><b>Space</b>${map.space?`<em>${map.space}</em><span>양손 엄지</span>`:''}</div></div></div>`;
+}
+// 버튼도 키 위치 순서대로, 키 이름을 함께 표시
+function keyButtons(map,extra){
+  const order=[...HOME.map(h=>h[0]),'space'].filter(k=>map[k]);
+  return order.map(k=>Object.assign({key:k,label:map[k],hint:keyCap(k)},extra&&extra[k]||{}));
+}
+function response(valid,timeout){
+  const r=run;
+  return new Promise(res=>{let done=false;
+    const fin=v=>{if(done)return;done=true;if(r.onResp===h)r.onResp=null;res(v);};
+    const h=k=>{if(valid.includes(k))fin({key:k,t:performance.now()});};
+    r.onResp=h;r.accept=valid;
+    if(timeout)later(()=>fin(null),timeout);
+  });
+}
+function openRunner(queue){
+  $('#runner').hidden=false;document.body.style.overflow='hidden';
+  run={alive:true,timers:new Set(),onResp:null,accept:[],queue:queue.slice(),raf:0,hold:{},holdMap:null};
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>{if(run)run.lock=l;},()=>{});}catch(e){}
+  nextInQueue();
+}
+function closeRunner(){
+  if(run){run.alive=false;run.timers.forEach(clearTimeout);cancelAnimationFrame(run.raf);try{run.lock&&run.lock.release();}catch(e){}}
+  try{window.speechSynthesis&&speechSynthesis.cancel();}catch(e){}
+  run=null;$('#runner').hidden=true;document.body.style.overflow='';stage.innerHTML='';controls.innerHTML='';render();
+}
+$('#run-exit').onclick=closeRunner;
+function nextInQueue(){
+  const id=run.queue.shift();
+  if(!id){closeRunner();return;}
+  run.mod=id;intro(id);
+}
+function say(d){try{const u=new SpeechSynthesisUtterance(String(d));u.lang='ko-KR';u.rate=1.05;speechSynthesis.speak(u);}catch(e){}}
+async function intro(id){
+  const m=MODS[id];
+  $('#run-title').textContent=m.name;setProg(run.queue.length?`다음: ${run.queue.map(q=>MODS[q].name).join(', ')}`:'');
+  stage.className='stage';
+  const extra=(id==='complex'||id==='complexCtrl')?`<div class="opt-line"><button type="button" id="snd-test">소리 테스트 ("칠")</button><label><input type="checkbox" id="vis-digits"> 소리가 안 나면 숫자를 화면에 표시</label></div>`:'';
+  stage.innerHTML=`<h2>${m.name}</h2><p class="lead">${m.howto}</p>${kbDiagram(m.keys)}<p class="hint">손가락을 홈 위치(F·J 돌기)에 올리고 시작하세요.</p>${extra}<p class="hint">실제 검사: ${m.official}. 연습은 ${m.practice}로 짧게 진행합니다. Esc로 언제든 그만둘 수 있고, 한글 입력 상태여도 키가 인식됩니다.</p>`;
+  if(id==='complex'||id==='complexCtrl'){$('#snd-test').onclick=()=>say(7);}
+  setButtons([{key:'1',label:'연습',hint:`1 · ${m.practice}`},{key:'2',label:'실전',hint:`2 또는 Enter · ${m.official}`,cls:'primary'}]);
+  const pickMode=await response(['1','2','enter'],0);
+  const mode=pickMode.key==='1'?'p':'r';
+  run.visDigits=!!($('#vis-digits')&&$('#vis-digits').checked);
+  controls.innerHTML='';
+  for(const n of [3,2,1]){stage.innerHTML=`<div class="count">${n}</div>`;await wait(700);}
+  stage.innerHTML='';
+  const res=await m.run(mode);
+  run.onResp=null;run.hold={};run.holdMap=null;
+  const s=Math.round(clamp(res.score));
+  const prev=lastOf(id);
+  prof().sessions.push({m:id,s,t:Date.now(),d:(mode==='r'?'[실전] ':'[연습] ')+res.summary});save();
+  const g=gradeOf(s);
+  stage.className='stage';
+  const diff=prev?s-prev.s:null;
+  stage.innerHTML=`<p class="hint">${m.name} ${mode==='r'?'실전':'연습'} 결과</p>
+    <div style="display:flex;align-items:center;gap:16px"><span class="result-score">${s}</span><span class="result-grade g-${g}">${g}</span></div>
+    <p class="hint">${diff===null?'첫 기록입니다':diff>0?`지난번보다 <b style="color:var(--sig-green)">+${diff}점</b>`:diff<0?`지난번보다 ${diff}점`:'지난번과 같습니다'}</p>
+    <div class="result-detail">${res.metrics.map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join('')}</div>
+    <p class="lead" style="font-size:.95rem">${res.tip||''}</p>`;
+  const more=run.queue.length;
+  setButtons([{key:'r',label:'다시 하기',hint:'R'},{key:'enter',label:more?`다음: ${MODS[run.queue[0]].name}`:'목록으로',hint:'Enter',cls:'primary'}]);
+  const r=await response(['r','enter'],0);
+  if(r.key==='r')run.queue.unshift(id);
+  nextInQueue();
+}
+function flash(ok){stage.classList.remove('fb-ok','fb-bad');void stage.offsetWidth;stage.classList.add(ok?'fb-ok':'fb-bad');later(()=>stage.classList.remove('fb-ok','fb-bad'),220);}
+const ms=v=>v?`${Math.round(v)}ms`:'–';
+const pct=v=>`${Math.round(v*100)}%`;
+const fmtLeft=msLeft=>{const s=Math.max(0,Math.ceil(msLeft/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
+
+/* 공통: 일치/불일치형 문항 반복 (시간 제한 + 문항 수 제한) */
+async function binaryBlock({N,totalMs,itemMs,keys,labels,make,gap=300}){
+  setButtons([{key:keys[0],label:labels[0],hint:`${keys[0].toUpperCase()} · 왼손 검지`},{key:keys[1],label:labels[1],hint:`${keys[1].toUpperCase()} · 오른손 검지`}]);
+  const t0=performance.now();let ok=0,err=0,miss=0,n=0;const rts=[];
+  while(n<N&&performance.now()-t0<totalMs){
+    setProg(`${n+1} / ${N} · 남은 시간 ${fmtLeft(totalMs-(performance.now()-t0))}`);
+    const it=make(n,N);
+    stage.innerHTML=it.html;
+    const s0=performance.now();const r=await response(keys,itemMs);
+    if(!r){miss++;flash(false);}else if((r.key===keys[0])===it.yes){ok++;rts.push(r.t-s0);}else{err++;flash(false);}
+    n++;stage.innerHTML='';await wait(gap);
+  }
+  return {ok,err,miss,n,rt:mean(rts)};
+}
+
+/* ---------- 복합기능 (운전): 속도 유지 + 시계 고르기 + 청각 "7" ---------- */
+function clockSVG(h,m){
+  const ha=((h%12)+m/60)*30,ma=m*6;
+  let t='';for(let i=0;i<12;i++){const a=i*30*Math.PI/180;t+=`<line x1="${50+40*Math.sin(a)}" y1="${50-40*Math.cos(a)}" x2="${50+45*Math.sin(a)}" y2="${50-45*Math.cos(a)}" stroke="var(--stage-muted)" stroke-width="${i%3?1.5:3}"/>`;}
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="var(--stage)" stroke="var(--stage-line)" stroke-width="2"/>${t}<line x1="50" y1="50" x2="50" y2="25" stroke="var(--stage-ink)" stroke-width="5" stroke-linecap="round" transform="rotate(${ha} 50 50)"/><line x1="50" y1="50" x2="50" y2="11" stroke="var(--sig-yellow)" stroke-width="3" stroke-linecap="round" transform="rotate(${ma} 50 50)"/><circle cx="50" cy="50" r="3.5" fill="var(--stage-ink)"/></svg>`;
+}
+function clockItem(){
+  const h=ri(1,12),m=ri(0,11)*5,k=a=>a[0]+':'+a[1];
+  const opts=[[h,m]];
+  const cands=shuffle([[m/5||12,(h%12)*5],[h%12+1,m],[(h+10)%12+1,m],[h,(m+30)%60],[h,(m+15)%60],[h,(m+45)%60]]);
+  for(const c of cands){if(opts.length>=4)break;if(!opts.some(o=>k(o)===k(c)))opts.push(c);}
+  shuffle(opts);
+  return {h,m,ans:opts.findIndex(o=>o[0]===h&&o[1]===m),opts};
+}
+async function runComplex(mode){
+  const DUR=(mode==='r'?300:120)*1000,VMAX=130;
+  stage.innerHTML=`<div class="cx">
+    <div><div class="speed-head"><span>목표 <b class="mono" id="tgt">80</b> km/h</span><span>현재 <b class="mono" id="cur">80</b> km/h</span></div>
+      <div class="speedbar"><div class="speedfill" id="sf"></div><div class="speedtgt" id="st"></div></div></div>
+    <div class="digital mono" id="dig"></div>
+    <div class="clocks" id="clocks"></div>
+    <div class="ear"><span class="wave" id="wave"></span><span>음성 숫자</span><span class="vd" id="vd"></span></div>
+  </div>`;
+  const CLK=['j','k','l',';'];
+  setButtons(keyButtons(MODS.complex.keys,{d:{hold:'brk',hint:'D 누르고 있기'},f:{hold:'acc',hint:'F 누르고 있기'},space:{cls:'primary'}}));
+  const r=run;r.accept=[...CLK,'space'];r.holdMap={f:'acc',d:'brk'};r.hold={};
+  const tgtEl=$('#tgt'),curEl=$('#cur'),sf=$('#sf'),st=$('#st'),dig=$('#dig'),clocksEl=$('#clocks'),wave=$('#wave'),vd=$('#vd');
+  let v=80,target=80,diffSum=0,diffT=0,last=performance.now();const t0=last;
+  let nextTarget=t0+ri(10000,16000);
+  // 시계
+  let cur=null,cId=0,vOk=0,vErr=0,vMiss=0;
+  const newClock=()=>{cur=clockItem();const id=++cId;
+    dig.textContent=`${cur.h}:${String(cur.m).padStart(2,'0')}`;
+    clocksEl.innerHTML=cur.opts.map((o,i)=>`<div>${clockSVG(o[0],o[1])}<span>${keyCap(CLK[i])}</span></div>`).join('');
+    later(()=>{if(id===cId){vMiss++;newClock();}},8000);};
+  newClock();
+  // 청각
+  let open=0,handled=true,aHit=0,aFa=0,aTargets=0;
+  const speak=()=>{if(performance.now()-t0>DUR-1500)return;
+    const d=Math.random()<.22?7:pick([0,1,2,3,4,5,6,8,9]);
+    say(d);wave.classList.add('on');later(()=>wave.classList.remove('on'),300);
+    if(r.visDigits){vd.textContent=d;later(()=>{vd.textContent='';},600);}
+    if(d===7){aTargets++;handled=false;open=performance.now()+2200;}
+    later(speak,ri(1700,2600));};
+  later(speak,1200);
+  r.onResp=k=>{
+    if(k==='space'){if(!handled&&performance.now()<=open){handled=true;aHit++;}else{aFa++;flash(false);}return;}
+    if(!cur)return;
+    if(CLK.indexOf(k)===cur.ans){vOk++;}else{vErr++;flash(false);}
+    cId++;newClock();
+  };
+  const frame=now=>{
+    if(!r.alive)return;
+    const dt=Math.min(.1,(now-last)/1000);last=now;
+    if(now>nextTarget){target=pick([50,60,70,80,90,100].filter(x=>x!==target));nextTarget=now+ri(10000,16000);}
+    v+=r.hold.acc?16*dt:r.hold.brk?-18*dt:-5*dt;v=Math.max(0,Math.min(VMAX,v));
+    diffSum+=Math.abs(v-target)*dt;diffT+=dt;
+    sf.style.width=`${v/VMAX*100}%`;sf.classList.toggle('off',Math.abs(v-target)>5);st.style.left=`${target/VMAX*100}%`;
+    tgtEl.textContent=target;curEl.textContent=Math.round(v);
+    setProg(`남은 시간 ${fmtLeft(DUR-(now-t0))}`);
+    if(now-t0<DUR)r.raf=requestAnimationFrame(frame);
+  };
+  r.raf=requestAnimationFrame(frame);
+  await wait(DUR);
+  cancelAnimationFrame(r.raf);r.onResp=null;cId++;
+  try{speechSynthesis.cancel();}catch(e){}
+  const avgDiff=diffT?diffSum/diffT:99,mins=DUR/60000;
+  const sp=clamp(100-avgDiff*4);
+  const vis=clamp((vOk-1.5*vErr)/(mins*12)*100);
+  const aud=aTargets?clamp(100*aHit/aTargets-8*aFa):0;
+  const score=(sp+vis+aud)/3;
+  return {score,summary:`속도차 ${avgDiff.toFixed(1)}km/h, 시계 ${vOk}(오답 ${vErr}), 청각 ${aHit}/${aTargets}(오반응 ${aFa})`,
+    metrics:[['속도차이 평균',`${avgDiff.toFixed(1)} km/h`],['시각 정답수',`${vOk} (오답 ${vErr})`],['청각 정답수',`${aHit}/${aTargets}`],['청각 오반응',aFa]],
+    tip:sp<60?'속도가 목표에서 자주 벗어납니다. 시계를 하나 고를 때마다 속도 막대를 한 번씩 확인하는 리듬을 만드세요.':vErr>3?'시계 오답은 감점됩니다. 긴 바늘(분) 먼저, 짧은 바늘(시) 나중 순서로 확인하세요.':aud<70?'"7"을 놓치거나 잘못 눌렀습니다. 눈은 시계에 두고 귀로만 "칠"을 기다리세요.':'세 과제를 균형 있게 처리했습니다.'};
+}
+
+/* ---------- 복합기능 (관제): 컨베이어벨트 숫자넣기·박스추가 + 청각 "7" ---------- */
+async function runComplexCtrl(mode){
+  const DUR=(mode==='r'?300:120)*1000,CAP=5;
+  stage.innerHTML=`<div class="cx">
+    <div class="belt" id="belt"><div class="belt-num mono" id="bn"></div></div>
+    <div class="boxes"><div class="box" id="bx0"><b>홀수 상자</b><div class="slots"></div><span>J</span></div><div class="box" id="bx1"><b>짝수 상자</b><div class="slots"></div><span>K</span></div></div>
+    <div class="ear"><span class="wave" id="wave"></span><span>음성 숫자</span><span class="vd" id="vd"></span></div>
+  </div>`;
+  setButtons(keyButtons(MODS.complexCtrl.keys,{space:{cls:'primary'}}));
+  const r=run;r.accept=['f','j','k','space'];
+  const belt=$('#belt'),bn=$('#bn'),wave=$('#wave'),vd=$('#vd'),bx=[$('#bx0'),$('#bx1')];
+  const fill=[0,0];
+  const drawBox=i=>{bx[i].querySelector('.slots').innerHTML=Array.from({length:CAP},(_,k)=>`<i class="${k<fill[i]?'on':''}"></i>`).join('');bx[i].classList.toggle('full',fill[i]>=CAP);};
+  drawBox(0);drawBox(1);
+  let num=null,born=0,fallMs=3600,vOk=0,vErr=0,vMiss=0,addOk=0,presented=0;
+  const t0=performance.now();
+  const spawn=()=>{num=ri(1,99);born=performance.now();presented++;bn.textContent=num;bn.style.top='0%';bn.hidden=false;
+    // 상자가 자주 차도록 같은 홀짝이 몰리는 구간을 섞음
+    fallMs=Math.max(2200,3600-(performance.now()-t0)/DUR*1400);};
+  const done=()=>{num=null;bn.hidden=true;later(()=>{if(r.alive&&performance.now()-t0<DUR-800)spawn();},ri(250,600));};
+  // 청각
+  let open=0,handled=true,aHit=0,aFa=0,aTargets=0;
+  const speak=()=>{if(performance.now()-t0>DUR-1500)return;
+    const d=Math.random()<.22?7:pick([0,1,2,3,4,5,6,8,9]);
+    say(d);wave.classList.add('on');later(()=>wave.classList.remove('on'),300);
+    if(r.visDigits){vd.textContent=d;later(()=>{vd.textContent='';},600);}
+    if(d===7){aTargets++;handled=false;open=performance.now()+2200;}
+    later(speak,ri(1800,2800));};
+  later(speak,1500);
+  r.onResp=k=>{
+    if(k==='space'){if(!handled&&performance.now()<=open){handled=true;aHit++;}else{aFa++;flash(false);}return;}
+    if(k==='f'){let any=false;for(const i of [0,1])if(fill[i]>=CAP){fill[i]=0;drawBox(i);any=true;}
+      if(any)addOk++;else{vErr++;flash(false);}return;}
+    if(num===null)return;
+    const i=k==='j'?0:1,right=(num%2===1)===(i===0);
+    if(right&&fill[i]<CAP){fill[i]++;drawBox(i);vOk++;}else{vErr++;flash(false);}
+    done();
+  };
+  spawn();
+  const frame=now=>{
+    if(!r.alive)return;
+    if(num!==null){const p=(now-born)/fallMs;const q=Math.min(1,p);bn.style.top=`calc(${q*100}% - ${q*48}px)`;if(p>=1){vMiss++;flash(false);done();}}
+    setProg(`남은 시간 ${fmtLeft(DUR-(now-t0))}`);
+    if(now-t0<DUR)r.raf=requestAnimationFrame(frame);
+  };
+  r.raf=requestAnimationFrame(frame);
+  await wait(DUR);
+  cancelAnimationFrame(r.raf);r.onResp=null;num=null;
+  try{speechSynthesis.cancel();}catch(e){}
+  const vis=presented?clamp(100*(vOk-vErr)/presented):0;
+  const aud=aTargets?clamp(100*aHit/aTargets-8*aFa):0;
+  const score=0.6*vis+0.4*aud;
+  return {score,summary:`숫자넣기 ${vOk}/${presented}(오답 ${vErr}, 놓침 ${vMiss}), 박스추가 ${addOk}, 청각 ${aHit}/${aTargets}`,
+    metrics:[['시각 정답수',`${vOk}/${presented}`],['시각 오답·놓침',`${vErr} · ${vMiss}`],['박스추가',addOk],['청각 정답수',`${aHit}/${aTargets}`],['청각 오반응',aFa]],
+    tip:vMiss>presented*.1?'숫자가 바닥에 닿을 때까지 기다리지 말고, 보이는 즉시 홀짝을 판단해 넣으세요.':vErr>presented*.1?'가득 찬 상자에 넣는 실수가 있습니다. 숫자를 넣을 때마다 상자 칸 수를 함께 보고, 5칸이 차면 바로 F로 새 상자를 추가하세요.':aud<70?'"7"을 놓치거나 잘못 눌렀습니다. 눈은 벨트에 두고 귀로만 "칠"을 기다리세요.':'세 과제를 균형 있게 처리했습니다.'};
+}
+
+/* ---------- 시각변별 (관제): 노선도 세트 비교 ---------- */
+function routeGen(level){
+  const n=ri(5,6)+level;
+  const r={n,branchAt:Math.random()<.55+level*.2?ri(1,n-2):-1,bdir:pick([-1,1]),blen:ri(2,3),tr:new Set(),trains:[]};
+  const tc=ri(1,2)+level;for(let i=0;i<tc;i++)r.tr.add(ri(0,n-1));
+  const segs=shuffle([...Array(n-1).keys()]).slice(0,ri(1,1+level));
+  r.trains=segs.map(seg=>({seg,dir:pick([1,-1])}));
+  return r;
+}
+const routeClone=r=>({...r,tr:new Set(r.tr),trains:r.trains.map(t=>({...t}))});
+function routeMutate(r){
+  const c=routeClone(r),ops=[];
+  if(c.branchAt>=0){ops.push(()=>{c.branchAt+=c.branchAt<c.n-2?1:-1;});ops.push(()=>{c.bdir*=-1;});ops.push(()=>{c.blen=c.blen===2?3:2;});}
+  ops.push(()=>{const i=ri(0,c.n-1);if(c.tr.has(i))c.tr.delete(i);else c.tr.add(i);});
+  if(c.trains.length){ops.push(()=>{pick(c.trains).dir*=-1;});
+    ops.push(()=>{const t=pick(c.trains),ns=t.seg+(t.seg<c.n-2?1:-1);if(!c.trains.some(o=>o.seg===ns))t.seg=ns;else t.dir*=-1;});}
+  pick(ops)();return c;
+}
+function routeSVG(r){
+  const W=300,H=170,y0=85,x0=22,dx=(W-44)/(r.n-1),px=i=>x0+i*dx;let g='';
+  g+=`<line x1="${x0}" y1="${y0}" x2="${W-22}" y2="${y0}" stroke="var(--sig-green)" stroke-width="5" stroke-linecap="round"/>`;
+  const st=[];
+  if(r.branchAt>=0){const bx=px(r.branchAt),hd=r.branchAt<(r.n-1)/2?1:-1;const pts=[[bx,y0]];
+    for(let k=1;k<=r.blen;k++)pts.push([bx+hd*k*dx*.55,y0+r.bdir*k*22]);
+    g+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#4F8DFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    pts.slice(1).forEach(p=>st.push([p[0],p[1],false]));}
+  for(let i=0;i<r.n;i++)st.push([px(i),y0,r.tr.has(i)]);
+  for(const [x,y,t] of st)g+=t?`<circle cx="${x}" cy="${y}" r="8" fill="var(--stage)" stroke="var(--stage-ink)" stroke-width="3"/>`:`<circle cx="${x}" cy="${y}" r="6" fill="var(--stage-ink)"/>`;
+  for(const t of r.trains){const cx=px(t.seg)+dx/2,cy=y0-15,d=t.dir;
+    g+=`<polygon points="${cx-9*d},${cy-7} ${cx+9*d},${cy} ${cx-9*d},${cy+7}" fill="var(--sig-yellow)"/>`;}
+  return `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true">${g}</svg>`;
+}
+async function runVisualCtrl(mode){
+  const N=mode==='r'?150:50;
+  const res=await binaryBlock({N,totalMs:mode==='r'?600000:200000,itemMs:6000,keys:['f','j'],labels:['같음','다름'],
+    make:(i,n)=>{const lv=i<n/3?0:i<2*n/3?1:2;const L=routeGen(lv);const yes=Math.random()<.5;const R=yes?routeClone(L):routeMutate(L);
+      return {yes,html:`<div class="routes"><div>${routeSVG(L)}</div><span class="vs">vs</span><div>${routeSVG(R)}</div></div>`};}});
+  const score=res.ok/N*100-Math.max(0,(res.rt-2600)/30);
+  return {score,summary:`정답 ${res.ok}/${N}, 평균 ${Math.round(res.rt)}ms`,
+    metrics:[['정답수',`${res.ok}/${N}`],['오답',res.err],['시간초과·미응답',N-res.ok-res.err],['평균 판단',ms(res.rt)]],
+    tip:res.err>N*.1?'한 번에 전체를 보지 말고 지선 → 환승역 → 열차 순서로 항목을 나눠서 비교하세요. 순서를 매번 같게 하면 빠지는 항목이 없습니다.':res.rt>3500?'정확하지만 느립니다. 150문항을 10분에 풀어야 하니 한 문항에 4초 이내를 목표로 하세요.':'노선도 변별이 안정적입니다.'};
+}
+
+/* ---------- 선택주의: 단어 뜻 vs 글자색 ---------- */
+const CW=[['빨강','var(--sig-red)'],['파랑','#4F8DFF'],['노랑','var(--sig-yellow)'],['초록','var(--sig-green)']];
+async function runSelective(mode){
+  const N=mode==='r'?160:80;
+  const res=await binaryBlock({N,totalMs:mode==='r'?300000:150000,itemMs:2500,keys:['f','j'],labels:['일치','불일치'],gap:250,
+    make:()=>{const yes=Math.random()<.5,a=ri(0,3);const ink=yes?a:pick([0,1,2,3].filter(x=>x!==a));
+      const wordR=Math.random()<.6?pick([0,1,2,3].filter(x=>x!==ink)):ink;
+      return {yes,html:`<div class="stroop"><div style="color:var(--stage-ink)">${CW[a][0]}</div><div style="color:${CW[ink][1]}">${CW[wordR][0]}</div></div><p class="hint">왼쪽 뜻 = 오른쪽 글자색?</p>`};}});
+  const acc=res.ok/N,score=acc*100-Math.max(0,(res.rt-950)/15);
+  return {score,summary:`정답 ${res.ok}/${N}, 평균 ${Math.round(res.rt)}ms`,
+    metrics:[['정답수',`${res.ok}/${N}`],['오답',res.err],['시간초과·미응답',N-res.ok-res.err],['평균 반응속도',ms(res.rt)]],
+    tip:res.err>N*.1?'오른쪽 단어를 "읽어서" 틀리는 경우가 많습니다. 오른쪽은 글자를 읽지 말고 색만 보세요. 실눈을 뜨듯 초점을 살짝 흐리면 도움이 됩니다.':res.rt>1300?'정확하지만 느립니다. 160문항을 5분에 풀어야 하니 한 문항에 2초 이내를 목표로 하세요.':'선택주의가 안정적입니다.'};
+}
+
+/* ---------- 지속주의: 짧은 자극에만 반응 ---------- */
+async function runSustained(mode){
+  const DUR=(mode==='r'?24:5)*60000;
+  stage.innerHTML=`<div class="lamp" id="sl" style="width:clamp(90px,26vw,150px)"></div><p class="hint">짧게 깜빡이면 Space · 길게 켜지면 참기</p>`;
+  setButtons([{key:'space',label:'짧은 신호',hint:'Space',cls:'primary'}]);
+  const lamp=$('#sl'),r=run;r.accept=['space'];
+  let isShort=false,open=0,handled=true,hits=0,shorts=0,longs=0,fa=0;const rts=[];let tOff=0;
+  r.onResp=()=>{const now=performance.now();if(isShort&&!handled&&now<=open){handled=true;hits++;rts.push(now-tOff);}else{fa++;flash(false);}};
+  const t0=performance.now();
+  while(performance.now()-t0<DUR){
+    setProg(`남은 시간 ${fmtLeft(DUR-(performance.now()-t0))}`);
+    await wait(ri(1300,2600));
+    isShort=Math.random()<.3;handled=!isShort;open=isShort?Infinity:0;tOff=performance.now()+180;
+    if(isShort)shorts++;else longs++;
+    lamp.classList.add('on','yellow');
+    const on=isShort?180:ri(650,900);
+    await wait(on);
+    lamp.classList.remove('on','yellow');tOff=performance.now();
+    if(isShort)open=tOff+1300;
+    await wait(1300);
+    if(isShort&&!handled)flash(false);
+    isShort=false;
+  }
+  r.onResp=null;
+  const hr=shorts?hits/shorts:0,far=longs?fa/longs:0;
+  const score=100*hr-200*far;
+  return {score,summary:`짧은 신호 ${hits}/${shorts}, 오반응 ${fa}`,
+    metrics:[['정답(짧은 신호)',`${hits}/${shorts}`],['놓침',shorts-hits],['오반응',fa],['평균 반응',ms(mean(rts))]],
+    tip:shorts-hits>shorts*.15?'중반 이후 놓치는 신호가 늘었을 수 있습니다. 실전은 24분이니 실전 모드로 주 1~2회 끝까지 버티는 연습을 하세요.':fa>3?'길게 켜진 신호에 성급하게 눌렀습니다. 불이 꺼지는 순간까지 기다렸다가 짧았을 때만 누르세요.':'집중을 잘 유지했습니다.'};
+}
+
+/* ---------- 시각변별: 신호등 세트 비교 ---------- */
+const SLOTS=['r','y','g','y'];
+const ASPECTS=[[0],[1],[2],[1,3],[2,3]];
+const headHTML=a=>`<div class="head">${SLOTS.map((c,i)=>`<i class="${ASPECTS[a].includes(i)?c:''}"></i>`).join('')}</div>`;
+async function runVisual(mode){
+  const N=mode==='r'?150:50;
+  const res=await binaryBlock({N,totalMs:mode==='r'?600000:200000,itemMs:5000,keys:['f','j'],labels:['같음','다름'],
+    make:(i,n)=>{const cnt=i<n/3?2:i<2*n/3?3:4;const L=Array.from({length:cnt},()=>ri(0,4));const R=L.slice();const yes=Math.random()<.5;
+      if(!yes){const k=ri(0,cnt-1);R[k]=pick([0,1,2,3,4].filter(x=>x!==L[k]));}
+      return {yes,html:`<div class="sigsets"><div class="sigset">${L.map(headHTML).join('')}</div><span class="vs">vs</span><div class="sigset">${R.map(headHTML).join('')}</div></div>`};}});
+  const score=res.ok/N*100-Math.max(0,(res.rt-2000)/30);
+  return {score,summary:`정답 ${res.ok}/${N}, 평균 ${Math.round(res.rt)}ms`,
+    metrics:[['정답수',`${res.ok}/${N}`],['오답',res.err],['시간초과·미응답',N-res.ok-res.err],['평균 판단',ms(res.rt)]],
+    tip:res.err>N*.1?'신호등이 3~4개일 때 실수가 늘어납니다. 왼쪽부터 같은 위치의 신호등끼리 한 쌍씩 비교하세요.':res.rt>2600?'정확하지만 느립니다. 150문항을 10분에 풀어야 하니 한 문항에 4초 이내를 목표로 하세요.':'시각변별이 안정적입니다.'};
+}
+
+/* ---------- 공간지각: 최단경로가 지나는 건물 ---------- */
+function bfs(W,H,block,sx,sy){
+  const d=Array(W*H).fill(Infinity);const q=[[sx,sy]];d[sy*W+sx]=0;
+  while(q.length){const [x,y]=q.shift();for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;
+    if(nx<0||ny<0||nx>=W||ny>=H||block[ny*W+nx])continue;if(d[ny*W+nx]>d[y*W+x]+1){d[ny*W+nx]=d[y*W+x]+1;q.push([nx,ny]);}}}
+  return d;
+}
+function mapItem(){
+  const W=8,H=6;
+  for(let tries=0;tries<500;tries++){
+    const block=Array(W*H).fill(false);
+    for(let i=0;i<W*H;i++)block[i]=Math.random()<.26;
+    const s=[0,ri(0,H-1)],e=[W-1,ri(0,H-1)];block[s[1]*W]=false;block[e[1]*W+W-1]=false;
+    const free=[];for(let y=0;y<H;y++)for(let x=1;x<W-1;x++)if(!block[y*W+x])free.push([x,y]);
+    if(free.length<4)continue;
+    const letters=shuffle(free).slice(0,4);
+    const d1=bfs(W,H,block,s[0],s[1]),d2=bfs(W,H,block,e[0],e[1]);const D=d1[e[1]*W+e[0]];
+    if(!isFinite(D)||D<W)continue;
+    const on=letters.map(([x,y])=>d1[y*W+x]+d2[y*W+x]===D);
+    if(on.filter(Boolean).length!==1)continue;
+    return {W,H,block,s,e,letters,ans:on.indexOf(true)};
+  }
+  return null;
+}
+function mapSVG(it){
+  const C=48,{W,H}=it;let g='';
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const b=it.block[y*W+x];g+=`<rect x="${x*C+1}" y="${y*C+1}" width="${C-2}" height="${C-2}" rx="4" fill="${b?'var(--stage-muted)':'var(--stage-2)'}" ${b?'opacity=".55"':''}/>`;}
+  it.letters.forEach(([x,y],i)=>{g+=`<rect x="${x*C+5}" y="${y*C+5}" width="${C-10}" height="${C-10}" rx="3" fill="var(--sig-yellow)"/><text x="${x*C+C/2}" y="${y*C+C/2+7}" text-anchor="middle" font-size="20" font-weight="700" font-family="JetBrains Mono,monospace" fill="#111921">${'ABCD'[i]}</text>`;});
+  for(const [p,lab,col] of [[it.s,'1','var(--sig-green)'],[it.e,'2','var(--sig-red)']])g+=`<circle cx="${p[0]*C+C/2}" cy="${p[1]*C+C/2}" r="${C/2-6}" fill="${col}"/><text x="${p[0]*C+C/2}" y="${p[1]*C+C/2+7}" text-anchor="middle" font-size="20" font-weight="700" font-family="JetBrains Mono,monospace" fill="#111921">${lab}</text>`;
+  return `<svg viewBox="0 0 ${W*C} ${H*C}" aria-hidden="true">${g}</svg>`;
+}
+async function runSpatial(mode){
+  const N=mode==='r'?50:20,TOT=mode==='r'?600000:240000,keys=['d','f','j','k'];
+  setButtons(keyButtons(MODS.spatial.keys));
+  const t0=performance.now();let ok=0,err=0,miss=0,n=0;const rts=[];
+  while(n<N&&performance.now()-t0<TOT){
+    setProg(`${n+1} / ${N} · 남은 시간 ${fmtLeft(TOT-(performance.now()-t0))}`);
+    const it=mapItem();if(!it)continue;
+    stage.innerHTML=`<div class="map">${mapSVG(it)}</div><p class="hint">1 → 2 최단경로가 지나는 건물은?</p>`;
+    const s0=performance.now();const r=await response(keys,20000);
+    if(!r){miss++;flash(false);}else if(keys.indexOf(r.key)===it.ans){ok++;rts.push(r.t-s0);}else{err++;flash(false);}
+    n++;stage.innerHTML='';await wait(350);
+  }
+  const m=mean(rts),score=ok/N*100-Math.max(0,(m-8000)/150);
+  return {score,summary:`정답 ${ok}/${N}, 평균 ${(m/1000).toFixed(1)}초`,
+    metrics:[['정답수',`${ok}/${N}`],['오답',err],['시간초과·미응답',N-ok-err],['평균 풀이',m?`${(m/1000).toFixed(1)}초`:'–']],
+    tip:err>N*.15?'눈으로 길을 하나만 따라가면 더 짧은 길을 놓칩니다. 1과 2 사이를 막는 장애물 벽을 먼저 찾고, 벽의 끊긴 곳(통로)을 지나는 건물을 보세요.':m>12000?'정확하지만 느립니다. 50문항을 10분에 풀려면 한 문항에 12초 이내여야 합니다.':'공간지각이 안정적입니다.'};
+}
+
+/* ---------- 작업기억: 색칠된 칸 위치 ---------- */
+function wmSVG(cells,probe){
+  const C=60;let g='';
+  for(let i=0;i<16;i++){const x=i%4,y=Math.floor(i/4);const f=cells&&cells.includes(i);
+    g+=`<rect x="${x*C+3}" y="${y*C+3}" width="${C-6}" height="${C-6}" rx="5" fill="${f?'var(--sig-yellow)':'var(--stage)'}" stroke="${probe===i?'var(--sig-green)':'var(--stage-line)'}" stroke-width="${probe===i?5:1.5}"/>`;}
+  return `<svg viewBox="0 0 240 240" aria-hidden="true">${g}</svg>`;
+}
+async function runMemory(mode){
+  const N=mode==='r'?80:40,TOT=mode==='r'?300000:150000;
+  setButtons([{key:'f',label:'포함',hint:'F'},{key:'j',label:'미포함',hint:'J'}]);
+  const t0=performance.now();let ok=0,err=0,n=0;const rts=[];
+  while(n<N&&performance.now()-t0<TOT){
+    setProg(`${n+1} / ${N} · 남은 시간 ${fmtLeft(TOT-(performance.now()-t0))}`);
+    const k=n<N/3?3:n<2*N/3?4:5;
+    const cells=shuffle([...Array(16).keys()]).slice(0,k);const yes=Math.random()<.5;
+    const probe=yes?pick(cells):pick([...Array(16).keys()].filter(i=>!cells.includes(i)));
+    stage.innerHTML=`<div class="wm">${wmSVG(cells,-1)}</div><p class="hint">위치를 기억하세요</p>`;
+    run.accept=[];await wait(1100);
+    stage.innerHTML=`<div class="wm">${wmSVG(null,-1)}</div><p class="hint">&nbsp;</p>`;await wait(500);
+    stage.innerHTML=`<div class="wm">${wmSVG(null,probe)}</div><p class="hint">초록 테두리 칸이 색칠되어 있었나요?</p>`;
+    const s0=performance.now();const r=await response(['f','j'],2500);
+    if(r&&(r.key==='f')===yes){ok++;rts.push(r.t-s0);}else{err++;flash(false);}
+    n++;await wait(250);
+  }
+  const score=ok/N*100-Math.max(0,(mean(rts)-1300)/30);
+  return {score,summary:`정답 ${ok}/${N}`,
+    metrics:[['정답수',`${ok}/${N}`],['오답·미응답',err+(N-n)],['평균 판단',ms(mean(rts))]],
+    tip:ok<N*.8?'칸 하나하나를 외우지 말고 색칠된 칸들이 만드는 모양(ㄱ자, 대각선 등)으로 기억하세요.':'작업기억이 안정적입니다. 5칸 문항에서도 속도를 유지해 보세요.'};
+}
+
+/* ---------- 추론: 수열·문자 ---------- */
+function numSeries(){
+  const g=ri(0,6);let s;
+  if(g===0){const a=ri(1,20),d=ri(2,9);s=i=>a+d*i;}
+  else if(g===1){const a=ri(1,5),r=ri(2,3);s=i=>a*r**i;}
+  else if(g===2){const a=ri(1,10),d=ri(1,4);s=i=>a+d*i*(i+1)/2;}
+  else if(g===3){const a=ri(20,40),b=ri(4,9),c=ri(1,3);s=i=>a+Math.ceil(i/2)*b-Math.floor(i/2)*c;}
+  else if(g===4){const x=[ri(1,4),ri(2,6)];for(let i=2;i<6;i++)x.push(x[i-1]+x[i-2]);s=i=>x[i];}
+  else if(g===5){const k=ri(1,5);s=i=>(i+k)*(i+k);}
+  else{const a=ri(1,9),b=ri(20,40),d1=ri(2,5),d2=ri(2,5);s=i=>i%2===0?a+d1*(i/2):b-d2*((i-1)/2);}
+  const arr=Array.from({length:6},(_,i)=>s(i));const ans=arr[5];const opts=new Set([ans]);
+  const diff=Math.abs(arr[5]-arr[4])||2;
+  for(const c of shuffle([ans+1,ans-1,ans+2,ans-2,arr[4]+(arr[4]-arr[3]),ans+diff,ans-diff,ans+10])){if(opts.size>=4)break;if(c>0)opts.add(c);}
+  while(opts.size<4)opts.add(ans+ri(3,15));
+  return {shown:arr.slice(0,5),ans,opts:shuffle([...opts])};
+}
+const KOR='가나다라마바사아자차카타파하';
+function letterSeries(){
+  const kor=Math.random()<.5,AL=kor?KOR:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',L=AL.length;
+  const g=ri(0,2);let idx;
+  if(g===0){const a=ri(0,4),d=ri(1,kor?2:4);idx=i=>a+d*i;}
+  else if(g===1){const a=ri(0,3),b=ri(2,3),c=1;idx=i=>a+Math.ceil(i/2)*b-Math.floor(i/2)*c;}
+  else{const a=ri(0,2);idx=i=>a+i*(i+1)/2;}
+  const arr=Array.from({length:6},(_,i)=>idx(i));
+  if(arr.some(v=>v<0||v>=L))return letterSeries();
+  const ans=arr[5];const opts=new Set([ans]);
+  for(const c of shuffle([ans+1,ans-1,ans+2,ans-2,ans+3])){if(opts.size>=4)break;if(c>=0&&c<L)opts.add(c);}
+  if(opts.size<4)return letterSeries();
+  const o=shuffle([...opts]);
+  return {shown:arr.slice(0,5).map(i=>AL[i]),ans:AL[ans],opts:o.map(i=>AL[i])};
+}
+async function runReasoning(mode){
+  const N=mode==='r'?20:10,TOT=mode==='r'?600000:300000;let ok=0,err=0,n=0;const rts=[];const t0=performance.now();
+  while(n<N&&performance.now()-t0<TOT){
+    setProg(`${n+1} / ${N} · 남은 시간 ${fmtLeft(TOT-(performance.now()-t0))}`);
+    const q=Math.random()<.6?numSeries():letterSeries();
+    stage.innerHTML=`<div class="series">${q.shown.map(v=>`<span>${v}</span>`).join('')}<span class="q">?</span></div><p class="hint">다음에 올 것은?</p>`;
+    const RK=['d','f','j','k'];
+    setButtons(q.opts.map((v,k)=>({key:RK[k],label:`<span class="mono">${v}</span>`,hint:`${k+1} · ${RK[k].toUpperCase()}`})));
+    const s0=performance.now();const r=await response([...RK,'1','2','3','4'],Math.max(1000,TOT-(performance.now()-t0)));
+    if(r&&q.opts[/\d/.test(r.key)?+r.key-1:RK.indexOf(r.key)]===q.ans){ok++;rts.push(r.t-s0);flash(true);}else{err++;flash(false);}
+    n++;stage.innerHTML=`<p class="lead">정답 <span class="mono">${q.ans}</span></p>`;controls.innerHTML='';await wait(800);
+  }
+  const m=mean(rts),score=ok/N*100-Math.max(0,(m-25000)/500);
+  return {score,summary:`정답 ${ok}/${N}`,
+    metrics:[['정답수',`${ok}/${N}`],['오답·미응답',N-ok],['평균 풀이',m?`${(m/1000).toFixed(1)}초`:'–']],
+    tip:ok<N*.7?'이웃한 것끼리 차이를 적어 보세요. 일정하지 않으면 차이의 차이, 또는 홀수·짝수 자리를 나눠 보세요. 문자는 순서 번호로 바꾸면 쉽습니다(가=1, 나=2).':'규칙 찾기가 빠릅니다.'};
+}
+
+/* ---------- 민첩성: 기호-숫자 표 보고 순서대로 누르기 ---------- */
+const SYMS=['◆','●','▲','■','★','✚','♥','◐'];
+async function runAgility(mode){
+  const DUR=(mode==='r'?120:60)*1000;
+  let map,row,pos,ok=0,bad=0;
+  const AK=['s','d','f','j','k','l'],keyNums=[...AK,'1','2','3','4','5','6'];
+  setButtons(AK.map((k,i)=>({key:k,label:String(i+1),hint:k.toUpperCase()})));
+  const newTable=()=>{const s=shuffle(SYMS.slice()).slice(0,6);map=Object.fromEntries(s.map((x,i)=>[x,String(i+1)]));return s;};
+  let syms=newTable();
+  const draw=()=>{stage.innerHTML=`<div class="symkey">${syms.map(s=>`<div><b>${s}</b><span>${map[s]}</span><small>${AK[+map[s]-1].toUpperCase()}</small></div>`).join('')}</div><div class="symrow">${row.map((s,i)=>`<div class="${i===pos?'cur':''} ${i<pos?(row.res[i]?'ok':'bad'):''}">${s}</div>`).join('')}</div>`;};
+  const newRow=()=>{row=Array.from({length:8},()=>pick(syms));row.res=[];pos=0;draw();};
+  newRow();
+  const r=run;r.accept=keyNums;const t0=performance.now();let rows=0;
+  r.onResp=k=>{const num=AK.includes(k)?String(AK.indexOf(k)+1):k;const good=map[row[pos]]===num;row.res[pos]=good;if(good)ok++;else{bad++;flash(false);}pos++;
+    if(pos>=row.length){rows++;if(rows%3===0)syms=newTable();newRow();}else draw();};
+  while(performance.now()-t0<DUR){setProg(`남은 시간 ${fmtLeft(DUR-(performance.now()-t0))}`);await wait(250);}
+  r.onResp=null;
+  const cpm=ok/(DUR/60000);
+  const score=(cpm-15)*2-bad*2;
+  return {score,summary:`분당 ${Math.round(cpm)}개, 오반응 ${bad}`,
+    metrics:[['정반응',ok],['분당 정반응',Math.round(cpm)],['오반응',bad]],
+    tip:bad>5?'표를 확인하지 않고 누른 경우가 있습니다. 표가 바뀌면 처음 두세 개는 천천히 확인하세요.':cpm<40?'손가락을 숫자 키 위에 고정하고, 눈은 표가 아니라 아래 줄을 보면서 숫자를 외워 가며 누르세요.':'빠르고 정확합니다.'};
+}
+
+render();
+})();
+</script>
+</body>
+</html>
